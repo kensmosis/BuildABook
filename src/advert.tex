@@ -1,0 +1,45 @@
+\newpage
+\savegeometry{Mem}
+\newgeometry{top=28pt,bottom=0pt}
+\parskip 0pt
+\pagestyle{empty}
+\begin{Spacing}{1.1}
+\fontsize{9pt}{9pt}\selectfont
+\begin{center}{%
+\vskip -32pt
+\Large Also Available}
+\vskip 11pt
+\pagestyle{empty}
+\fontsize{8pt}{8pt}\selectfont
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{L}[1]{>{\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\begin{center}\textbf{\textsc{My First Book}}\end{center}
+\vskip 4pt
+\begin{tabular}{C{1.5in} L{1.6in}}
+\includegraphics[width=\linewidth]{book1.bw.jpg} &  
+\input gen/book1_blurb.tex
+\linebreak
+\linebreak
+``\textbf{...great great awful great terrible fun awful I lots of adjectives and adverbs stuff...}''
+\linebreak
+--- \textit{Kirkus Review}\strut
+\end{tabular}
+\vskip 26pt
+\begin{center}\rule[0.5ex]{0.8\textwidth}{1pt}\end{center}
+\vskip 10pt
+\begin{center}\textbf{\textsc{My Second Book}}\end{center}
+\vskip 8pt
+\begin{tabular}{C{1.5in} L{1.6in}}
+\vskip -12pt \includegraphics[width=\linewidth]{book2.bw.jpg} &  
+\linebreak
+\input gen/book2_blurb.tex
+\linebreak
+\linebreak
+\end{tabular}
+\vskip 20pt
+\noindent\textbf{Available through Amazon, B\&N, and bookstores everywhere.}
+\end{center}
+\end{Spacing}
+\clearpage
+
+\loadgeometry{Mem}

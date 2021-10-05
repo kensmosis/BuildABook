@@ -1,0 +1,109 @@
+\def\ktitle{My Novel}
+\def\kauthor{Steinbeck Hemingway Faulkner III}
+
+\newcommand{\at}{\makeatletter @\makeatother}
+
+\documentclass[12pt,oneside]{memoir}
+\usepackage{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{fancyvrb}
+\usepackage{courier}
+\usepackage{listings}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\lstset{
+    basicstyle=\ttfamily,
+%    numbers=left,
+%    numberstyle=\footnotesize,
+    stepnumber=2,
+%    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=true,
+    breakautoindent=true,
+    linewidth=\textwidth
+}
+
+\linespread{1.15}	% Necessary for Palladio/Palatino
+\setstocksize{11in}{8.5in}
+\settrimmedsize{\stockheight}{\stockwidth}{*}
+\settrims{0pt}{0pt}
+\settypeblocksize{9in}{7in}{*}
+\setlrmargins{*}{0.75in}{*}
+\setulmargins{*}{1in}{*}
+
+\setlength\topmargin{0pt}
+\setlength\headheight{0pt}
+\setlength\parskip{12pt}
+\raggedright
+\setlength\parindent{0.3in}
+\checkandfixthelayout
+\flushbottom
+
+\def\kskip{\vskip 12pt}
+\chapterstyle{verville}
+
+\title{$title$}
+\author{$author$}
+\date{\today}
+
+\newenvironment{allintypewriter}{%
+\ttfamily
+\parindent 0pt
+\parskip 8pt
+\raggedright
+\sloppy
+}{\par}
+
+\setsecnumdepth{none}
+\maxsecnumdepth{none}
+
+\makeevenhead{headings}{\scriptsize\kauthor}{\textbf{DRAFT}}{\scriptsize\ktitle}
+\makeevenfoot{headings}{}{\thepage}{}
+\makeoddhead{headings}{\scriptsize\kauthor}{\textbf{DRAFT}}{\scriptsize\ktitle}
+\makeoddfoot{headings}{}{\thepage}{}
+\makeevenhead{plain}{\scriptsize\kauthor}{\textbf{DRAFT}}{\scriptsize\ktitle}
+\makeevenfoot{plain}{}{\thepage}{}
+\makeoddhead{plain}{\scriptsize\kauthor}{\textbf{DRAFT}}{\scriptsize\ktitle}
+\makeoddfoot{plain}{}{\thepage}{}
+
+\begin{document}
+\checkandfixthelayout
+\frenchspacing
+
+\renewcommand{\section}[1]{%		% section break for non-draft (*****)
+\begin{center}*****\end{center}
+}
+
+\renewcommand{\subsection}[1]{%		% chapter file name (draft only)
+\vglue -12pt
+\begin{center}\bfseries{#1}\end{center}
+}
+
+\renewcommand{\subsubsection}[1]{%	% Location and year (chapter subtitle).  Also "The End"
+\begin{center}\bfseries{#1}\end{center}
+}
+
+%\renewcommand{\paragraph}[1]{%	
+%\vskip 36pt
+%\begin{center}\bfseries{#1}\end{center}
+%}
+
+\pagestyle{plain}
+\thispagestyle{headings}
+
+\pagestyle{empty}
+\maketitle
+
+\pagestyle{plain}
+\mainmatter
+
+$body$
+
+\end{document}

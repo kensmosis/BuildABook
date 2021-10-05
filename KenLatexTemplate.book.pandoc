@@ -1,0 +1,359 @@
+%%% Call as normal for book
+%%% Call with kebonly=true (or set to anything) for ebook header stuff only.  I.e. for the stage which generates the equal-margin frontmatter version from which we extract page images for the ebook.
+
+\def\ktitle{My Novel}
+\def\kisbnthirteenpb{999-8-7777777-66-1}
+\def\kisbnthirteenkindle{999-8-7777777-66-2}
+\def\klccn{2030101999}
+\def\kpress{My Press}
+\def\kauthor{Steinbeck Hemingway Faulkner III}
+\def\kartist{Rembrandt Picasso Dali}
+
+%%% Define a convenient blank page macro
+\def\kblankpage{ %
+\newpage
+\thispagestyle{empty}
+\mbox{}
+}
+
+\ifx \kebonly \undefined
+\documentclass[10pt,twoside,openright]{memoir}
+\else
+\documentclass[10pt,oneside,openany]{memoir}	% If for ebook, onesided.  
+\fi
+\usepackage{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{fancyvrb}
+\usepackage{courier}
+\usepackage{url}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage[object=vectorian]{pgfornament}
+\usepackage[pass]{geometry}
+\usepackage{listings}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{adforn}
+\usepackage{graphicx}
+\usepackage[artemisia]{textgreek}
+
+%%% My Note:  For palladio/palatino we need a bigger linespread.
+%%% Nonfiction Note:  For fiction, I use indented pars and no par-spacing.  For non-fiction the opposite is true.  In that case, switch parskip to 12pt and parskip to 0pt and linespread to 1.05  (I do this for the frontmatter/backmatter even here).
+
+%%% We use palladio/palatino (via mathpazo), so need to adjust linespread.  For fiction (with parindent and no parskip), 1.15 seems the best.
+\linespread{1.15}	% Necessary for Palladio/Palatino
+
+%%% Our book is 5x8 and we'll use a 0.8in outer margin and 1in inner margin, a 0.8in bottom margin and a 1.2 in top margin
+\setstocksize{8in}{5in}
+\settypeblocksize{6in}{3.2in}{*}
+\settrimmedsize{\stockheight}{\stockwidth}{*}
+\settrims{0pt}{0pt}
+
+\ifx \kebonly \undefined
+\setlrmargins{*}{0.8in}{*}
+\setulmargins{*}{1.2in}{*}
+\else				% If for ebook pages, use symmetric margins.
+\setlrmargins{*}{0.9in}{*}
+\setulmargins{*}{1in}{*}
+\fi
+
+%%% Adjust so footer (page number slot) and header (title/etc) look good relative to text block
+\setlength\topmargin{0pt}
+\setlength\headheight{12pt}
+\setlength\footskip{35pt}
+
+%%% We want the bottom not to be ragged
+\flushbottom
+
+%%% Recalculate to make sure everything is right.
+\checkandfixthelayout
+
+%%% Useful macro for a line skip
+\def\kskip{\vskip 12pt}
+
+%%% Choose the chapter style.  NOTE: the title is "Chapter n" produced by the script, so just display title!
+\chapterstyle{dash}
+
+\title{$title$}
+\author{$author$}
+\date{\today}
+
+\setsecnumdepth{none}
+\maxsecnumdepth{none}
+
+% Style 1:  Header even = title, odd= author.  Page numbers on outside top (except chapters and blank pages, where footer = page number).
+\copypagestyle{chapter}{plain}
+\makeevenhead{chapter}{}{}{}
+\makeevenfoot{chapter}{}{\small\thepage}{}
+\makeoddhead{chapter}{}{}{}
+\makeoddfoot{chapter}{}{\small\thepage}{}
+\makeevenhead{plain}{\small\thepage}{\footnotesize \kauthor}{}
+\makeevenfoot{plain}{}{}{}
+\makeoddhead{plain}{}{\footnotesize \ktitle}{\small\thepage}
+\makeoddfoot{plain}{}{}{}
+\makeevenhead{empty}{}{}{}
+\makeevenfoot{empty}{}{}{}
+\makeoddhead{empty}{}{}{}
+\makeoddfoot{empty}{}{}{}
+
+% Alt style:  Header even = title, odd= author.  Footer = page number.
+% \copypagestyle{chapter}{plain}
+% \makeevenhead{chapter}{}{}{}
+% \makeevenfoot{chapter}{}{\thepage}{}
+% \makeoddhead{chapter}{}{}{}
+% \makeoddfoot{chapter}{}{\thepage}{}
+% \makeevenhead{plain}{}{\scriptsize\theauthor}{}
+% \makeevenfoot{plain}{}{\thepage}{}
+% \makeoddhead{plain}{}{\scriptsize\thetitle}{}
+% \makeoddfoot{plain}{}{\thepage}{}
+% \makeevenhead{empty}{}{}{}
+% \makeevenfoot{empty}{}{}{}
+% \makeoddhead{empty}{}{}{}
+% \makeoddfoot{empty}{}{}{}
+
+%%% Avoid overhanging words and hyphenation via some flexibility in glue.
+%%% Don't allow hyphenation if just 2 chars
+%%% These settings seem to be ideal to minimize user intervention.
+\emergencystretch=30pt
+\hyphenpenalty=500
+\righthyphenmin=3
+\lefthyphenmin=4
+\finalhyphendemerits=5000
+
+%%% Official start of doc, and finalize layout
+\begin{document}
+\checkandfixthelayout
+
+%%% Not sure why, but frenchspacing looks better.  It's more complicated than 1 vs 2 spaces after punctuation, but we'll aim for 1 (which \frenchspacing seems to provide!)
+\frenchspacing
+
+%%% Redefine the section command to be a flourish. Change the \vskip before/after to get spacing right.  Can also try different flourishes (adforn codes).
+\renewcommand{\section}[1]{%
+\vskip 12pt
+\begin{center}\adforn{22}\adforn{73}\adforn{50}\end{center}
+}
+
+%%% Since this is a template for the production book, ignore 3rd level headers.  These are used by AssembleBook.py to display filenames for draft versions.  Here, we do nothing.  
+\renewcommand{\subsection}[1]{%
+}
+
+%%% AssembleBook.py uses the 4th level section for chapter subtitles (ex. date and place) and for "The End".  This isn't used in the present book, however.  
+\renewcommand{\subsubsection}[1]{%
+\begin{center}\bfseries{#1}\end{center}
+}
+
+\renewcommand{\paragraph}[1]{%
+\begin{center}\LARGE\bfseries{#1}\end{center}
+}
+
+\frontmatter
+
+%%% For frontmatter turn off parindent
+\parskip 12pt
+\parindent 0pt
+
+%%% Interior Frontispiece Image (recto).   Well, not technically frontispiece since not facing the title page), but same idea.	NOTE: the background to this png file is transparent.
+\pagestyle{empty}
+\newpage
+\thispagestyle{empty}
+\vglue 0in
+\includegraphics[width=3.5in]{frontispiece.book.png}
+
+%%% Blank page (verso)
+\kblankpage
+
+%%% Half-title page (recto)
+\pagestyle{empty}
+\thispagestyle{empty}
+\newpage
+\thispagestyle{empty}
+\begin{center}
+\begin{vplace}[0.5]
+\fontsize{14pt}{14pt}\selectfont
+\textsc{\ktitle}
+\end{vplace}
+\end{center}
+
+%%% Blank page (verso)
+\kblankpage
+
+%%% Title Page (recto)
+\thispagestyle{empty}
+\begin{center}
+\begin{tabular}[c]{c}
+\\
+\\
+\\
+\\
+\\
+\HUGE\textsc{\ktitle}\\
+\\
+\\
+\\
+\\
+\\
+\LARGE by\\
+\\
+\\
+\\
+\\
+\\
+\LARGE \kauthor\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+{\large \kpress}
+\end{tabular}
+\end{center}
+
+%%% Copyright Page (verso)
+\newpage
+\thispagestyle{empty}
+{
+\fontsize{8pt}{8pt}\selectfont
+\begin{tabular}[c]{l}
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+\\
+Copyright \copyright\, 2030 by \kauthor\\
+\\
+All rights reserved.\\
+\\
+ISBN-13 (paperback): \kisbnthirteenpb\\
+\\
+ISBN-13 (ebook): \kisbnthirteenkindle\\
+\\
+Library of Congress Control Number: \klccn\\
+\\
+Published by \kpress\\
+\\
+Printed in the United States of America\\
+\\
+Cover Art by \kartist\\
+\\
+First Edition\\
+\\
+\\
+\\
+\end{tabular}
+}
+\vskip 1in
+\parbox{\textwidth}{
+\fontsize{8pt}{8pt}\selectfont
+\textit{DISCLAIMER:  This is a work of fiction.  Any resemblance of characters in this work to real individuals, living or deceased, is purely coincidental.  Except Bob.  I don't like Bob.  If there's something bad about Bob, it's probably true.}}
+
+%%% TOC (recto)
+\renewcommand{\contentsname}{}
+\pagestyle{empty}
+\newpage
+\vglue 30pt
+\begin{center}
+\LARGE\textsc{contents}
+\end{center}
+\vglue 8pt
+\thispagestyle{empty}
+\renewcommand*{\cftchapterfont}{\normalfont}
+\renewcommand*{\cftchapterpagefont}{\fontfamily{ppl}\selectfont}
+\setlength{\beforechapskip}{-12pt}
+\addtocontents{toc}{\protect\thispagestyle{empty}}
+\tableofcontents*
+\clearpage
+
+%%% Blank page (verso)
+\kblankpage
+
+%%%%% Body of Text
+
+%%% Set the appropriate indent/parskip for the text
+%% For fiction, we use this
+\parskip 0pt
+\parindent 16pt
+
+%% For nonfiction, use this instead
+%\parskip 12pt
+%\parindent 0pt
+
+%% All chapters start on recto pages, so sometimes we get a blank page automatically inserted (verso) to force this.  Ordinarily, this has no page number.  We want a page number at the bottom, just like for a chapter start page.
+\aliaspagestyle{cleared}{chapter}
+
+\mainmatter
+\pagestyle{plain}
+$body$
+
+%% Undo the previous blank-page page-numbering scheme.  It was good for the body where the only blank pages were those auto-inserted before chapter starts.  Now we will insert our own, so disable page number at the bottom.
+\aliaspagestyle{cleared}{empty}
+
+%%% Add a "The End" flourish.  Some nice pairs for the outer flourish handles:  17/46,  19/47,  22/50.  We'll go with 19/47.
+\vglue 0.7in
+\begin{center}\adforn{19}\hglue 3pt\textbf{\textsc{The End}}\hglue 3pt\adforn{47}\end{center}
+
+%%% Back matter
+\backmatter
+\pagestyle{empty}
+\newpage
+\parskip 12pt
+\parindent 0pt
+
+%%% Advert for 2 other books (recto)
+\newpage
+\input advert.tex
+
+%%% Blank page (verso)
+\kblankpage
+
+%%% Acknowledgments (recto)
+\parskip 12pt
+\parindent 0pt
+\newpage
+\pagestyle{empty}
+\begin{Spacing}{1.2}
+\fontsize{9pt}{9pt}\selectfont
+\begin{center}{\LARGE\textsc{acknowledgments}}\end{center}
+\vskip 12pt
+\input ack.tex
+\end{Spacing}
+
+%%% Blank page (verso)
+\kblankpage
+
+%%% About the author (recto)
+\newpage
+\pagestyle{empty}
+\begin{Spacing}{1.2}
+\fontsize{9pt}{9pt}\selectfont
+%\fontname\font\ at \the\fontdimen6\font
+\begin{center}{\LARGE\textsc{about the author}}\end{center}
+\vskip 12pt
+\input about.tex
+\end{Spacing}
+
+%%% Blank page (verso)
+\kblankpage
+
+%%% Extra 2 blank pages (for Ingram, we need at least a blank last page, and it is best to have the page count be a multiple of 4 --- and ideally both 12, so both 4 and 6, otherwise Ingram may add a couple of blank pages, which can change the spine width and affect the fit of the cover template).
+\kblankpage
+\kblankpage
+
+\end{document}
+

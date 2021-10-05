@@ -1,0 +1,12 @@
+*.toc
+*.aux
+*.log
+*.pdf
+*.out
+gen/*
+img/*
+out/*
+auto/*
+cover
+src/auto/*
+*.indd

@@ -1,0 +1,94 @@
+h1 {
+	font-size: large;
+	text-align: center;
+}
+
+p {
+	text-indent: 16px;
+	text-align: justify;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+
+.flatpar {
+	text-indent: 0px;
+	text-align: justify;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+
+.flatpar p {
+	text-indent: 0px;
+	text-align: justify;
+	margin-top: 0em;
+	margin-bottom: 16px;
+}
+
+/* We need to hide the header text on pages where we are using an image from the print book */
+.hidetext {
+}
+
+/* Method 1 */
+.hidetext h1 {
+	font-size: 0;
+	color: transparent;
+	user-select: none;
+	display: none;
+}
+	
+/* Method 2 
+.hidetext h1 {
+	display: none;
+}
+
+/* Method 3
+.hidetext h1 {
+	text-index: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+} 
+*/
+
+/* Method 4
+.hidetext h1 {
+	color: transparent;
+	user-select: none;
+}
+*/
+
+.imgRight {
+	float: right;
+	padding: 5px;
+	width: 30%;
+	height: auto;
+	display: block;
+}
+
+.imgLeft {
+	float: left;
+	padding: 5px;
+	width: 30%;
+	height: auto;
+	display: block;
+}
+
+.imgCenter {
+	margin-left: auto;
+	margin-right: auto;
+	padding: 5px;
+	max-height 800px;
+	width: auto;
+	height: auto;
+	display: block;
+}
+
+.imgFull {
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0px;
+	max-width 1200px;
+	max-height 1920px;
+	width: auto;
+	height: auto;
+	display: block;
+}
