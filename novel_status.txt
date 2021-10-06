@@ -23,16 +23,17 @@
 #		I= No separation.  Use this when you want to split a file for organizational purposes, but it should have no affect on the book.
 
 
-@PRE	
 @SUFF	md
-@HEAD		Type		Title				Status		Person		Location
+@HEAD		Type		Status		Person		Location	Title
 
 @BOOK	MyNovel
+@PRE	chap_
 
-grandopening	C		Stuff Starts			W1PA		Louis		Vienna
-boymeetsgirl	S		Stuff Happens			W1P		Susan		New York
-crisis		C		Bad Stuff Happens		W1		Bob		Vienna
-denouement	I		Lots of Stuff Happens		W		Susan		Vienna
-resolution	S		Good Stuff Happens		W1PA		Louis		Hades
-finale		C		No More Stuff Happens		W		All		New York
+grandopening	C		W1PA		Louis		Vienna		Stuff Starts			
+boymeetsgirl	S		W1P		Susan		New York	Stuff Happens
+crisis		C		W1		Bob		Vienna		Bad Stuff Happens
+denouement	I		W		Susan		Vienna		Lots of Stuff Happens
+resolution	S		W1PA		Louis		Hades		Good Stuff Happens
+finale		C		W		All		New York	No More Stuff Happens
+
 

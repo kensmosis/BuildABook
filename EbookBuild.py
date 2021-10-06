@@ -21,7 +21,6 @@ import subprocess
 import argparse
 import re
 import sys
-sys.path.append("../Scripts")
 import ReadStatus as rs
 
 def KErr(*args, **kwargs):
@@ -33,10 +32,11 @@ def KErrDie(*args, **kwargs):
 
 def ParseCommandLine():
 	p= argparse.ArgumentParser(description='Generate Book markdown file from chapters')
-	p.add_argument('--status',help='Status file to use for story info. Mandatory.',type=str,required=True)
+	p.add_argument('--status',help='Status file to use for chapter info. Mandatory.',type=str,required=True)
 	p.add_argument('--out',help='output markdown file in prep for epub. Mandatory.',type=str,required=True)
 	p.add_argument('--srcdir',help='Source directory for chapter files. Mandatory.',type=str,required=True)
 	p.add_argument('--book',help='Book name in status file to use. Mandatory.',type=str,required=True)
+	p.add_argument('--booktype',help='novel or stories. Mandatory.',type=str,required=True)
 
 	c= p.parse_args()
 	return c
@@ -58,7 +58,7 @@ def AccumSecFlourish(l):
 	l.append("<p><br/></p>\n")
 
 ### Read a source file as a chapter or a section (as described in status.txt)
-def AccumSrcFile(cnum,sdir,r,l):
+def AccumSrcFileNovel(cnum,sdir,r,l):
 	if (not r.Exists(sdir)): KErrDie("Can't find source file "+r.Filename())
 	ifil= sdir+"/"+r.Filename()
 	ctype= -1
@@ -76,6 +76,21 @@ def AccumSrcFile(cnum,sdir,r,l):
 			l.append(i)
 			n= n+1
 	return (ctype,n)
+
+def AccumSrcFileStory(sdir,r,l):
+	if (not r.Exists(sdir)): KErrDie("Can't find source file "+r.Filename())
+	ifil= sdir+"/"+r.Filename()
+	n= 0
+	fl= re.split(':',r.ValF("Format"))
+	sstyle= ".flashstyle"
+	if ("C" in fl): sstyle= ".chapstyle"
+	elif ("P" in fl): sstyle= ".poemstyle"
+	l.append("\n\n# %s {%s .unnumbered}\n\n" % (r.GetTitleInfer(),sstyle))
+	with open(ifil,'r') as f:
+		for i in f:
+			l.append(i)
+			n= n+1
+	return n
 
 ### Read a source file as a chapter or a section
 def AccumFile(ifil,tit,stype,noheader,l):
@@ -113,7 +128,7 @@ def AccumImg(f,t,n,l):
 def AccumAdvert(blurb,img,tit,l):
 	l.append("\n\n# Other Works: "+tit+" {epub:type=appendix .unnumbered}\n")
 	l.append("<center>\n")
-	l.append("![Other Works: "+tit+"]("+img+"){height=30% custom-style=\"imgCenter\"}\n")	
+	l.append("![Other Works: "+tit+"]("+img+"){height=30% width=100% custom-style=\"imgCenter\"}\n")	
 	l.append("</center>\n\n")
 	l.append("<p><br/></p>")
 	AccumFile(blurb,"","",True,l)
@@ -122,28 +137,35 @@ def DumpMarkdown(l,ofil):
 	with open(ofil,'wt') as f:
 		f.write(''.join(l))
 
-
 def main():
 	c= ParseCommandLine()
-	x= rs.Status(c.status)
+	isnovel= (c.booktype=="novel")
+	x= rs.Status(c.status,not isnovel)
 	if (c.book not in x.books): bu.KErrDie("Book not present in status file")
 	b= x.books[c.book]
 	l= list()
 
 	# Front Matter.  Note that we omitted the half-title and we put the title (page image) in the template.
-	AccumImg("gen/eb_copyright.png","copyright-page","Copyright",l)		# Image of print book copyright page
+	AccumImg("gen/eb_"+c.booktype+"_copyright.png","copyright-page","Copyright",l)		# Image of print book copyright page
 	AccumImg("img/frontispiece.ebook.png","frontmatter","Frontispiece",l)	# Frontispiece image
 
-	cnum= 0
-	numsec= 0
-	ntot= 0
-	for i in b:
-		(ctype,n)= AccumSrcFile(cnum,c.srcdir,i,l)
-		if (ctype==0): cnum= cnum+1
-		else: numsec= numsec+1
-		ntot= ntot+n
-	print("Read %d source file in %d chapters and %d sections.  %d lines total" % (len(b),cnum,numsec,ntot))
-	AccumEndFlourish(l)
+	if (isnovel):
+		cnum= 0
+		numsec= 0
+		ntot= 0
+		for i in b:
+			(ctype,n)= AccumSrcFileNovel(cnum,c.srcdir,i,l)
+			if (ctype==0): cnum= cnum+1
+			else: numsec= numsec+1
+			ntot= ntot+n
+		print("Read %d source file in %d chapters and %d sections.  %d lines total" % (len(b),cnum,numsec,ntot))
+		if isnovel: AccumEndFlourish(l)
+	else:
+		ntot= 0
+		for i in b: 
+			ntot= ntot+ AccumSrcFileStory(c.srcdir,i,l)
+		print("Read %d source files.  %d lines total" % (len(b),ntot))
+
 
 	# Back Matter
 	AccumThankYou("src/thankyou.html","Thank You","appendix",l)	# 'Thank you for reading' page

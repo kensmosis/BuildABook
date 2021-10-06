@@ -1,7 +1,7 @@
 %%% Call as normal for book
 %%% Call with kebonly=true (or set to anything) for ebook header stuff only.  I.e. for the stage which generates the equal-margin frontmatter version from which we extract page images for the ebook.
 
-\def\ktitle{My Novel}
+\def\ktitle{$title$}
 \def\kisbnthirteenpb{999-8-7777777-66-1}
 \def\kisbnthirteenkindle{999-8-7777777-66-2}
 \def\klccn{2030101999}
@@ -75,8 +75,8 @@
 %%% Choose the chapter style.  NOTE: the title is "Chapter n" produced by the script, so just display title!
 \chapterstyle{dash}
 
-\title{$title$}
-\author{$author$}
+\title{\ktitle}
+\author{\kauthor}
 \date{\today}
 
 \setsecnumdepth{none}
@@ -120,6 +120,49 @@
 \righthyphenmin=3
 \lefthyphenmin=4
 \finalhyphendemerits=5000
+
+%%% Macros for adverts.  Each advert page has a top and bottom (or just top) advert.  
+%%% The line between them and vertical spacing is external to these and we must tweak the vertical spacing as needed.
+%%% Used in the end-matter
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{L}[1]{>{\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\newcommand{\kadverttop}[3]{%
+\begin{minipage}[c][][t]{\textwidth}
+\renewcommand{\subsection}[1]{\vskip 12pt} 
+\parskip 12pt
+\parindent 0pt
+\begin{center}
+\pagestyle{empty}
+\fontsize{8pt}{8pt}\selectfont
+\begin{center}\textbf{\textsc{#1}}\end{center}
+\vskip 12pt
+\begin{tabular}{C{1.5in} L{1.6in}}
+\includegraphics[width=\linewidth]{#2} & 
+\input #3
+\end{tabular}
+\end{center}
+\end{minipage}
+}
+
+\newcommand{\kadvertbot}[4]{%
+\begin{minipage}[c][][b]{\textwidth}
+\renewcommand{\subsection}[1]{\vskip 12pt} 
+\parskip 12pt
+\parindent 0pt
+\begin{center}
+\fontsize{8pt}{8pt}\selectfont
+\begin{center}\textbf{\textsc{#1}}\end{center}
+\vskip 12pt
+\begin{tabular}{C{1.5in} L{1.6in}}
+\includegraphics[width=\linewidth]{#2} &  
+\input #3
+\end{tabular}
+\vglue #4
+\noindent\textbf{Available through Amazon, B\&N, and bookstores everywhere.}
+\end{center}
+\end{minipage}
+}
 
 %%% Official start of doc, and finalize layout
 \begin{document}
@@ -305,8 +348,11 @@ $body$
 \aliaspagestyle{cleared}{empty}
 
 %%% Add a "The End" flourish.  Some nice pairs for the outer flourish handles:  17/46,  19/47,  22/50.  We'll go with 19/47.
+\ifx \knoendflourish \undefined
 \vglue 0.7in
 \begin{center}\adforn{19}\hglue 3pt\textbf{\textsc{The End}}\hglue 3pt\adforn{47}\end{center}
+\else
+\fi
 
 %%% Back matter
 \backmatter
@@ -315,12 +361,26 @@ $body$
 \parskip 12pt
 \parindent 0pt
 
-%%% Advert for 2 other books (recto)
+%%% Start Advert pages
 \newpage
-\input advert.tex
+\savegeometry{Mem}
+\newgeometry{top=28pt,bottom=0pt}
+\pagestyle{empty}
+\begin{Spacing}{1.1}
+
+%%% Advert page 1 (recto)
+\kadverttop{My First Book}{book1.bw.jpg}{book1_blurb.tex}
+\vskip 20pt
+\begin{center}\rule[0.5ex]{0.8\textwidth}{1pt}\end{center}
+\vskip 12pt
+\kadvertbot{My Second Book}{book2.bw.jpg}{book2_blurb.tex}{8pt}
 
 %%% Blank page (verso)
 \kblankpage
+
+%%% End advertising pages
+\end{Spacing}
+\loadgeometry{Mem}
 
 %%% Acknowledgments (recto)
 \parskip 12pt

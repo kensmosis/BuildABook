@@ -59,7 +59,7 @@ def DumpMarkdown(l,ofil):
 def main():
 	c= ParseCommandLine()
 	x= rs.Status(c.status)
-	if (c.book not in x.books): bu.KErrDie("Book not present in status file")
+	if (c.book not in x.books): KErrDie("Book not present in status file")
 	b= x.books[c.book]
 	l= list()
 	cnum= 0

@@ -24,6 +24,36 @@ p {
 	margin-bottom: 16px;
 }
 
+.chapstyle {
+}
+
+.chapstyle p {
+	text-indent: 16px;
+	text-align: justify;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+
+.poemstyle {
+}
+
+.poemstyle p {
+	text-indent: 0px;
+	text-align: justify;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+
+.flashstyle {
+}
+
+.flashstyle p {
+	text-indent: 0px;
+	text-align: justify;
+	margin-top: 0em;
+	margin-bottom: 16px;
+}
+
 /* We need to hide the header text on pages where we are using an image from the print book */
 .hidetext {
 }
