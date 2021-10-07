@@ -58,7 +58,7 @@ class SRec:
 	def IsRound1(s): return IsCharField("1")
 	def GetCharField(s): return s.ValF("Status") if s.HasField("Status") else ""
 	def GetTitle(s): return s.ValF("Title") if s.HasField("Title") else ""
-	def GetTitleInfer(s): return s.GetTitle() if (s.GetTitle()!="") else s.name	# Chapter title if provided, otherwise the listed name string.  Useful if we make the last field (so can be blank) the title, and only provide it when it differs from the file's name.  Must use the allowblanklastfield=true in Status below in order for this to work.
+	def GetTitleInfer(s): return s.GetTitle() if (s.GetTitle()!="") else s.name.capitalize()	# Chapter title if provided, otherwise we take the listed name string but with the first char capitalized.  Useful if we make the last field (so can be blank) the title, and only provide it when it differs from the file's name.  Must use the allowblanklastfield=true in Status below in order for this to work.
 
 def fileerr(err,n,fname): print("ERROR: %s.  Line %d in file %s" % (err,n,fname))
 

@@ -1,19 +1,18 @@
 ### To do:  	item stuff
-###		test new permutations
 
 ### Book info
 ifeq ($(BOOKTYPE),stories)
-	TITLE := My Stories
-	BOOK := MyStories
-	FPREFIX := story_
+TITLE := My Stories
+BOOK := MyStories
+FPREFIX := story_
 else ifeq ($(BOOKTYPE),novel)
-	TITLE := My Novel
-	BOOK := MyNovel
-	FPREFIX := chap_
+TITLE := My Novel
+BOOK := MyNovel
+FPREFIX := chap_
 else
-	TITLE := ERROR
-	BOOK := ERROR
-	FPREFIX := ERROR_
+TITLE := ERROR
+BOOK := ERROR
+FPREFIX := ERROR_
 endif
 
 AUTHOR := Steinbeck Hemingway Faulkner III
@@ -58,11 +57,10 @@ eb_stories_halftitle_page := 1
 eb_stories_title_page := 3
 eb_stories_copyright_page := 4
 
-### Conversion flags for novel (PANFLAGS), collection (ADPANFLAGS), and all ebooks (EPANFLAGS)
+### Conversion flags for novel (PANFLAGS), collection (ADPANFLAGS), all ebooks (EPANFLAGS)
 PANFLAGS := -M title="$(TITLE)" -M author="$(AUTHOR)" --wrap=none --standalone --verbose --fail-if-warnings --strip-comments -M lang="en-GB" --top-level-division=chapter -t latex -f markdown+smart
 EPANFLAGS := -M title="$(TITLE)" -M author="$(AUTHOR)" --wrap=none --standalone --verbose --fail-if-warnings --strip-comments -M lang="en-GB" --top-level-division=chapter --toc-depth=1 -t epub2 -f markdown+smart+header_attributes --metadata-file=$(GENDIR)NeededDummyMetadata.md
 ADPANFLAGS := --wrap=none --strip-comments --top-level-division=chapter -t latex -f markdown+smart-auto_identifiers
-
 
 ### Disable intrinsic rules (since we're not coding, they're useless!)
 .SUFFIXES:
@@ -76,7 +74,7 @@ ADPANFLAGS := --wrap=none --strip-comments --top-level-division=chapter -t latex
 	$(NOECHO) $(NOOP)
 
 ### Declare the non-generative targets
-.PHONY: all draft book ebook justebook lookinside clean cleanimages cleanebook cleanall frontispiece ecovers
+.PHONY: all draft book ebook justebook lookinside clean cleanimages cleanebook cleanall frontispiece ecovers item itemraw cleanitems
 
 SRCFILES := $(shell find ./src/ -type f -name '$(FPREFIX)*.md')
 
@@ -131,7 +129,7 @@ $(GENDIR)stories_book.tex: $(BASEDIR)KenCollectionBook.tex $(GENDIR)inputlist.te
 	cat $< | sed -r 's/$(myvar2)/$(TITLE)/g' > $@
 #	cat $< | sed -r 's/$(myvar1)/$(myvar3)/' | sed -r 's/$(myvar2)/$(TITLE)/g' > $@
 
-$(GENDIR)stories_draft.tex: $(BASEDIR)/KenCollectionDraft.tex $(GENDIR)inputlist.tex $(GENDIR)about.tex $(GENDIR)ack.tex 
+$(GENDIR)stories_draft.tex: $(BASEDIR)KenCollectionDraft.tex $(GENDIR)inputlist.tex $(GENDIR)about.tex $(GENDIR)ack.tex 
 	cat $< | sed -r 's/$(myvar2)/$(TITLE)/g' > $@
 
 ### Ebook's intermediate print version (to extract certain page images).  
@@ -256,7 +254,7 @@ ISBNFILE := $(OUTDIR)$(PRINTISBN).zip
 
 lookinside: $(BOOKTYPE)_$(ISBNFILE)
 
-$(GENDIR)$(BOOKTYPE)_interior.pdf: $(OUTDIR)$(BOOKTYPE)_book.pdf $(GENDIR)
+$(GENDIR)$(BOOKTYPE)_interior.pdf: $(OUTDIR)$(BOOKTYPE)_book.pdf | $(GENDIR)
 	cp $< $@
 
 $(BOOKTYPE)_$(ISBNFILE): $(GENDIR)$(BOOKTYPE)_interior.pdf $(IMGDIR)front_cover.jpg $(IMGDIR)back_cover.jpg | $(OUTDIR)
@@ -272,4 +270,23 @@ $(GENDIR)README.pdf: $(GENDIR)README.tex
 
 $(GENDIR)README.tex: $(BASEDIR)README.md | $(GENDIR)
 	pandoc --standalone -o $@ $<
+
+### Create individual item pdf (make sure no spaces after ITEMPREFIX defs)
+### ITEM=$entryname [ANON=1] make item
+ifeq ($(ANON),1)
+ITEMPREFIX := anon_
+ITEMANON := --anon
+else
+ITEMPREFIX := self_
+ITEMANON := 
+endif
+
+cleanitems:
+	rm $(OUTDIR)self_*.pdf
+	rm $(OUTDIR)anon_*.pdf
+	rm $(GENDIR)self_*.tex
+	rm $(GENDIR)anon_*.tex
+
+item: | $(OUTDIR)
+	python3 $(BASEDIR)RunItemMake.py --status ./stories_status.txt --author "$(AUTHOR)" --book "MyStories" --item $(ITEM) $(ITEMANON)
 

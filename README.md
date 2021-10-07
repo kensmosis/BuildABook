@@ -54,17 +54,15 @@ Then you run one of the following:
 
 ## Special commands to produce individual poems and stories for editing or submission.  
 
-The output is print-ready on 8.5 x 11.  The format can be modified as required for submissions.  Any file in `src/` can be produced this way, but it is recommended only for files starting with `poem_`, `flash_`, and `story_` (which have these designations to help you choose).  Also note that the formatting IN the pieces themselves (i.e. line breaks, blank lines, etc) assume the correct choice of type in the output. They will look incorrect with other types!
+`ITEM=$name [ANON=1] make item`  Generates a standalone pdf of the piece (using the correct poem, flash-fiction, or story) format.  It extracts all the info from the status file.  $name is the entry in the status.txt file.  This excludes the prefix and suffix.I.e., if `story_foo.md` is the file, but `foo` appears in `status.txt`, we would use `foo`.  
 
-`ITEMTYPE=$type ITEM=$name [ANON=1] make item` generates `out/$name.pdf` from the single poem or story or flash-fiction `src/$name.md` as described below.
+The output is print-ready on 8.5 x 11.  The format can be modified as required for submissions.
 
-`poem`		No indent, linebreaks respected, blank lines are stanza breaks (without a blank line in output).
-
-`story`		Indent, linebreaks ignored, blank lines are par breaks (no blank line in output).
-
-`flash`		No indent, linebreaks ignored, blank lines are par breaks (with a blank line in output).
+In this sample setup, the status file is `stories_status.txt`, but in general it would be `status.txt` for a collection.  It must have the `Format` field discussed below for collections.
 
 An optional `ANON=1` can be used as well to produce output without any identifying info (and just "copyrighted" in the header), as needed for some contests, etc. NOTE: this only affects the print output.  Such info may be included as pdf metadata, but usually contests only care about the print output.
+
+`make cleanitems`	Removes all item-related output (for all items, not any specific one).
 
 ## Examples
 
@@ -134,7 +132,7 @@ gen/			Most intermediate files, including some images.
 out/			Final output files
 img/			Imported original image files, and most generated ones.
 
-## Collection poem/story/flash-fiction item production
+## poem/story/flash-fiction collection and item production
 
 `KenCompilationBook.tex`	The master LaTeX file for the output print book of a compilation.  The main text is loaded from a generated file called `gen/inputlist.tex`. **This is the counterpart of `KenLatexTemplate.book.pandoc` for the novel, and requires lots of adaptation.**
 
@@ -143,6 +141,12 @@ img/			Imported original image files, and most generated ones.
 `GenInputs.py`		Produces a list of the input items for a compilation. **This generally won't require adaptation, but if extra flexibility is needed for the formatting of certain poems, it may.**
 
 `ConvertItemsToTex.py`	Converts the individual items from markdown to LaTeX.  Since this relies on reading `status.txt`, we run the `pandoc` command here, rather than in the `Makefile` itself (since needs knowledge of the correct list of files). **This should not require any modification.**
+
+`GetItemInfo.py`	Utility script which extracts type of a piece from status.txt for use in Makefile.  **This should not require any modification.**
+
+`Makefile.indiv`	Used as part of single-item production chain (for producing pdfs of individual pieces).  **This should not require any modification.**
+
+`RunItemMake.py`	Used as part of single-item production chain (for producing pdfs of individual pieces).  **This should not require any modification.**
 
 # Necessary externals
 
@@ -241,6 +245,8 @@ Many of the image conversions in the Makefile are simple.  Either copies or just
 
 * KenEpubTemplate.pandoc:   Don't touch this.
 
+* GetItemInfo.py:  Don't touch this.
+
 ## Novel
 
 * status.txt:
@@ -284,7 +290,7 @@ Many of the image conversions in the Makefile are simple.  Either copies or just
 * status.txt:
 	- This is best adapted from stories_status.txt.
 	- Add your own custom fields if needed.  Note that they need to be fully populated (i.e. no blank entries).  Their interpretation will be performed in AssembleBook.py and EbookBuild.py.
-	- The last field should be Title.
+	- The last field should be Title.  If it is provided, then this is used as the title of the piece (preserving whatever capitalization is used.  If not, then the 1st field (name sans prefix or suffix) will be used, but with the 1st letter capitalized if it isn't already.
 	- If you are using a common prefix for all your chapters (ex Chapfoo.md is your naming convention), adjust @PRE
 	- Adjust the @BOOK field.
 	- Add entries for each file.  Type is 'C' for all.  Format is a :-delimited string.  Include 'P' for poem, 'F' for flash-fiction, 'C' for story ('F' is the default if none specified).  Include 'S' for standalone or 'D1' or 'D2' for the top/bottom half of a 2-entry page.  Note that a D1 entry always must be followed by a D2 entry.  Every line must have S, D1, or D2.  Use L:n.m to adjust the linespread just for that piece.  This is useful if you need to squeeze a piece onto a page slightly.  Small changes are not visibly noticeable.  Default linespread is 1.35.  If the file starts a new chapter (the 1st listed must), Type is 'C'.  If it starts a new section (visible) within a chapter, type is 'S', and if it just adds (invisible) to the previous entry use 'I' (i.e. for organizational splitting of files rather than visual).  You can leave the Title field blank if the display title exactly matches the 1st field (the filename sans prefix and suffix).

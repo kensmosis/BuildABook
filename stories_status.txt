@@ -40,18 +40,18 @@
 @BOOK	MyStories
 
 blue			C		W12PA		S:P
-therealdeal		C		W12PA		S:C		the real deal
+therealdeal		C		W12PA		S:C		The Real Deal
 if			C		W12PA		S:F
 something		C		W12PA		D1:F
-anotherthing		C		W12PA		D2:F:L1.1	another thing
+anotherthing		C		W12PA		D2:F:L1.1	Another Thing
 green			C		W12PA		S:P
 zed			C		W12PA		S:F
-somestuff		C		W12PA		S:C		some stuff
-flowersarenice		C		W12PA		S:P		flowers are nice
-bloodblooddeath		C		W12PA		S:C		blood, blood, death
+somestuff		C		W12PA		S:C		Some Stuff
+flowersarenice		C		W12PA		S:P		Flowers are Nice
+bloodblooddeath		C		W12PA		S:C		Blood, blood, death
 yellow			C		W12PA		S:P:L1.1
 maybe			C		W12PA		S:F
-profoundthoughts	C		W12PA		D1:F		profound thoughts
+profoundthoughts	C		W12PA		D1:F		Profound Thoughts
 pretentious		C		W12PA		D2:P
 
 

@@ -1,0 +1,37 @@
+### Simple makefile used by script RunItemMake.py
+### It assumes the variables $(ITEMFILE)
+BASEDIR := ./
+SRCDIR := ./src/
+IMGDIR := ./img/
+GENDIR := ./gen/
+OUTDIR := ./out/
+PANFLAGS := --wrap=none --strip-comments --top-level-division=chapter -t latex -f markdown+smart-auto_identifiers
+
+### Disable intrinsic rules (since we're not coding, they're useless!)
+.SUFFIXES:
+	$(NOECHO) $(NOOP)
+
+### Preserve intermediate targets (for debugging, etc)
+.PRECIOUS: $(GENDIR)% $(OUTDIR)%
+	$(NOECHO) $(NOOP)
+
+.SECONDARY: $(GENDIR)% $(OUTDIR)%
+	$(NOECHO) $(NOOP)
+
+### Directory build targets
+%/:
+	-mkdir -p $@
+
+ifeq ($(ANON),1)
+ITEMPREFIX := anon_
+else
+ITEMPREFIX := self_
+endif
+
+$(GENDIR)$(ITEMPREFIX)%.tex: $(SRCDIR)%.md | $(GENDIR)
+	pandoc $(PANFLAGS) -M title="$(TITLE)" -M author="$(AUTHOR)" -M itemtype="$(ITEMTYPE)" -M anonymous="$(ANON)" --template $(BASEDIR)KenLatexTemplate.item.pandoc -o $@ $<
+
+$(OUTDIR)$(ITEMPREFIX)%.pdf: $(GENDIR)self_%.tex | $(OUTDIR)
+	pdflatex --output-directory $(GENDIR) $<
+	cp $(GENDIR)$(notdir $(basename $<)).pdf $@
+

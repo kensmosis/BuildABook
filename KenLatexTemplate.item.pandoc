@@ -1,0 +1,114 @@
+% *** TODO:  Remove xii from bottom of last page of TOC
+
+%%% Call as normal for book
+%%% Call with kebonly=true (or set to anything) for ebook header stuff only.
+
+%%% Define values we use throughout
+\def\ktitle{$title$}
+\def\kauthor{$author$}
+\def\kanon{$anonymous$}
+\def\kone{1}
+
+\documentclass[10pt,oneside]{memoir}
+\usepackage{mathpazo}
+\usepackage{setspace}
+\usepackage{textcomp}
+\usepackage{lastpage}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+
+\parindent 0pt
+\parskip 0pt
+\linespread{1.0}	% Necessary for Palladio/Palatino
+\setstocksize{11in}{8.5in}
+\settrimmedsize{\stockheight}{\stockwidth}{*}
+\settrims{0pt}{0pt}
+\settypeblocksize{9in}{6.5in}{*}
+\setlrmargins{*}{1in}{*}
+\setulmargins{*}{1in}{*}
+
+\setlength\headsep{24pt}
+\setlength\headheight{48pt}
+\raggedright
+\setlength\parindent{0.3in}
+\checkandfixthelayout
+\flushbottom
+
+%%% Don't allow hyphenation if just 2 chars
+\emergencystretch=15pt
+\hyphenpenalty=500
+\righthyphenmin=4
+\lefthyphenmin=4
+
+\ifx\kanon\kone
+\makeevenhead{plain}{\textbf{Anonymized}}{DRAFT}{\textbf{$title$}}
+\makeevenfoot{plain}{}{\thepage\ of \pageref{LastPage}}{}
+\makeoddhead{plain}{\textbf{Anonymized}}{DRAFT}{\textbf{$title$}}
+\makeoddfoot{plain}{}{\thepage\ of \pageref{LastPage}}{}
+\else
+\makeevenhead{plain}{\textbf{$author$}}{DRAFT}{\textbf{$title$}}
+\makeevenfoot{plain}{}{\thepage\ of \pageref{LastPage}}{}
+\makeoddhead{plain}{\textbf{$author$}}{DRAFT}{\textbf{$title$}}
+\makeoddfoot{plain}{}{\thepage\ of \pageref{LastPage}}{}
+\fi
+
+%%% Line spread.  Set to 1.5 for double, 1.35 for poems/flash.  Stories can be anywhere from 1.15-1.35
+\linespread{1.35}	% Big, but the right choice for poetry/flash-fiction with Palladio/Palatino
+
+%%% Chapter/section defs.  We don't use chapters, so skip that one. The rest are used for my own formatting purposes (via markdown).
+\renewcommand{\chapter}[1]{}	% Disable
+\renewcommand{\section}[1]{\knewpage}	% ## is a forced newpage
+\renewcommand{\subsection}[1]{\kskip}	% ### is a stanza break
+\renewcommand{\subsubsection}[1]{	% #### is a bold/centered flourish/etc
+\kskip
+\begin{center}\textbf{#1}\end{center}
+\kskip
+}
+
+%%% For the actual pieces, we use kenflash and kenpoem, both of which wrap kenunit with the appropriate parms.
+% kenunit takes args:  title, linespread, parskip, parindent, vskip
+% Do NOT remove the blank lines from this script!!!  The formatting gets screwed up if you do that!
+\newcommand{\kenunit}[6]{ %
+{{\LARGE\textbf{#1}}
+\vskip 0.25 in
+\pbarrow
+\addcontentsline{toc}{chapter}{#1}
+\renewcommand{\kchapname}{#1}
+\addtocounter{kchapcnt}{1}
+\parskip #3
+\parindent #4
+\vskip #6
+\fontsize{10pt}{10pt}\selectfont
+\linespread{#2}\selectfont
+
+\input #5
+
+}}
+
+% kenpoem takes args:  title, file, linespread, vskip
+\newcommand{\kenpoem}[4] { \renewcommand{\subsection}[1]{\vskip 12pt} \kenunit{#1}{#3}{0pt}{0pt}{#2}{#4} }
+
+% kenflash takes args:  title, file, linespread, vskip
+\newcommand{\kenflash}[4] { \renewcommand{\subsection}[1]{} \kenunit{#1}{#3}{12pt}{0pt}{#2}{#4} }
+
+% kenflash takes args:  title, file, linespread, vskip
+\newcommand{\kenstory}[4] { \renewcommand{\subsection}[1]{} \kenunit{#1}{#3}{0pt}{12pt}{#2}{#4} }
+
+\begin{document}
+\checkandfixthelayout
+\frenchspacing
+
+\pagestyle{plain}
+\mainmatter
+
+\vspace*{24pt}
+{\LARGE\begin{center}\MakeUppercase{$title$}\end{center}}
+\vspace*{24pt}
+
+{
+\fontsize{10pt}{10pt}\selectfont
+$body$
+}
+
+\end{document}
+
