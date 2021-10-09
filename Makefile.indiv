@@ -1,8 +1,13 @@
 ### Simple makefile used by script RunItemMake.py
 ### It assumes the variables $(ITEMFILE)
+ifeq ($(ANON),1)
+ITEMPREFIX := anon_
+else
+ITEMPREFIX := self_
+endif
+
 BASEDIR := ./
 SRCDIR := ./src/
-IMGDIR := ./img/
 GENDIR := ./gen/
 OUTDIR := ./out/
 PANFLAGS := --wrap=none --strip-comments --top-level-division=chapter -t latex -f markdown+smart-auto_identifiers
@@ -12,26 +17,35 @@ PANFLAGS := --wrap=none --strip-comments --top-level-division=chapter -t latex -
 	$(NOECHO) $(NOOP)
 
 ### Preserve intermediate targets (for debugging, etc)
-.PRECIOUS: $(GENDIR)% $(OUTDIR)%
-	$(NOECHO) $(NOOP)
-
-.SECONDARY: $(GENDIR)% $(OUTDIR)%
+.PRECIOUS: $(GENDIR)$(ITEMPREFIX)%_core.tex $(GENDIR)$(ITEMPREFIX)%_full_wrapper.tex $(GENDIR)$(ITEMPREFIX)%_full.tex $(GENDIR) $(OUTDIR) $(GENDIR)% $(OUTDIR)%
 	$(NOECHO) $(NOOP)
 
 ### Directory build targets
 %/:
 	-mkdir -p $@
 
-ifeq ($(ANON),1)
-ITEMPREFIX := anon_
-else
-ITEMPREFIX := self_
-endif
+### Dummy empty md file
+$(GENDIR)DummyMarkdownFileForConversion.md: | $(GENDIR)
+	@echo "" > $@
 
-$(GENDIR)$(ITEMPREFIX)%.tex: $(SRCDIR)%.md | $(GENDIR)
-	pandoc $(PANFLAGS) -M title="$(TITLE)" -M author="$(AUTHOR)" -M itemtype="$(ITEMTYPE)" -M anonymous="$(ANON)" --template $(BASEDIR)KenLatexTemplate.item.pandoc -o $@ $<
+### A plain non-standalone conversion of the markdown to tex as in ConvertItemsToTex.py
+$(GENDIR)$(ITEMPREFIX)%_core.tex: $(SRCDIR)$(ITEMSRC) | $(GENDIR)
+	pandoc $(PANFLAGS) -o $@ $<
 
-$(OUTDIR)$(ITEMPREFIX)%.pdf: $(GENDIR)self_%.tex | $(OUTDIR)
-	pdflatex --output-directory $(GENDIR) $<
-	cp $(GENDIR)$(notdir $(basename $<)).pdf $@
+### A one-line wrapper, which calls the right macro (kenpoem, kenflash, or kenstory), loading the %.tex file.  The echo wrappers are to protect the underscores from being escaped by pandoc!
+$(GENDIR)$(ITEMPREFIX)%_full_wrapper.tex: $(GENDIR)$(ITEMPREFIX)%_core.tex | $(GENDIR)
+	python3 $(BASEDIR)GenInputs.py --status $(BASEDIR)stories_status.txt --srcdir $(SRCDIR) --book $(BOOK) --item $(ITEM) --itemfile $< > $@
 
+### The actual latex file we will compile.  This is the one-line-wrapper, run through pandoc as if it was markdown, and injected into the item template.
+$(GENDIR)$(ITEMPREFIX)%_full.tex: $(GENDIR)DummyMarkdownFileForConversion.md
+	pandoc $(PANFLAGS) -M myfile="$(notdir $(basename $@))_wrapper.tex" -M title="$(TITLE)" -M author="$(AUTHOR)" -M itemtype="$(ITEMTYPE)" -M anonymous="$(ANON)" --template $(BASEDIR)KenLatexTemplate.item.pandoc -o $@ $<
+	sed -i -r 's/\\_/_/g' $@
+
+### Produce the pdf
+$(GENDIR)$(ITEMPREFIX)%_full.pdf: $(GENDIR)$(ITEMPREFIX)%_full.tex $(GENDIR)$(ITEMPREFIX)%_core.tex $(GENDIR)$(ITEMPREFIX)%_full_wrapper.tex | $(OUTDIR)
+	echo $<
+	TEXINPUTS=$(TEXINPUTS):$(GENDIR) pdflatex --output-directory $(GENDIR) $<
+	TEXINPUTS=$(TEXINPUTS):$(GENDIR) pdflatex --output-directory $(GENDIR) $<
+
+$(OUTDIR)$(ITEMPREFIX)%.pdf: $(GENDIR)$(ITEMPREFIX)%_full.pdf | $(OUTDIR)
+	cp $< $@ 

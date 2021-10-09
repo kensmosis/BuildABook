@@ -5,7 +5,7 @@
 
 %%% Define values we use throughout
 \def\ktitle{$title$}
-\def\ktitlelc{$title$}
+\def\ktitlelc{\lowercase{$title$}}
 \def\kisbnthirteenpb{999-8-7777777-66-1}
 \def\kisbnthirteenkindle{999-8-7777777-66-2}
 \def\klccn{2030101999}
@@ -112,6 +112,7 @@
 
 \input #5
 
+\thispagestyle{empty}
 }}
 
 % kenpoem takes args:  title, file, linespread, vskip
@@ -187,6 +188,18 @@
 \end{minipage}
 }
 
+\newcommand{\kenbackmatter}[2]{ %
+\begin{center}{\LARGE\textbf{#1}}\end{center}
+\vskip 0.25 in
+\parskip 12pt
+\parindent 0pt
+\fontsize{10pt}{10pt}\selectfont
+\linespread{1.15}\selectfont
+
+\input #2
+
+}
+
 %%% Begin the actual book
 \begin{document}
 \pagestyle{empty}	% No header/footer for frontmatter
@@ -219,7 +232,7 @@
 \\
 \\
 \\
-\LARGE\textsc{\ktitlelc}\\
+\LARGE\ktitle\\
 \\
 \\
 \\
@@ -230,7 +243,7 @@
 \\
 \large of Mixed Works\\
 \\
-\large by\\
+\normalsize by\\
 \\
 \large \kauthor\\
 \\
@@ -362,7 +375,7 @@ a set of books! \\
 
 %%% Advert page 1 (recto)
 \kadverttop{My First Book}{book1.bw.jpg}{book1_blurb.tex}
-\vskip 20pt
+\vskip 96pt
 \begin{center}\rule[0.5ex]{0.8\textwidth}{1pt}\end{center}
 \vskip 12pt
 \kadvertbot{My Second Book}{book2.bw.jpg}{book2_blurb.tex}{8pt}
@@ -375,15 +388,14 @@ a set of books! \\
 \loadgeometry{Mem}
 
 %%% Acknowledgments (recto)
-\newpage
-\input{ack.tex}
+\kenbackmatter{Acknowledgments}{ack.tex}
 
 %%% Blank page (verso)
 \kblankpage
 
 %%% About the author page (recto)
-\newpage
-\input{about.tex}
+\knewpage
+\kenbackmatter{About}{about.tex}
 
 %%% Blank page (verso)
 \kblankpage

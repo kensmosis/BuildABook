@@ -39,7 +39,7 @@
 \setulmargins{*}{1in}{*}
 
 \setlength\topmargin{0pt}
-\setlength\headheight{0pt}
+\setlength\headheight{24pt}
 \setlength\parskip{12pt}
 \raggedright
 \setlength\parindent{0.3in}
@@ -96,14 +96,15 @@
 %}
 
 \pagestyle{plain}
-\thispagestyle{headings}
 
-\pagestyle{empty}
+{
 \maketitle
+\thispagestyle{empty}
+}
 
-\pagestyle{plain}
 \mainmatter
 
 $body$
+
 
 \end{document}

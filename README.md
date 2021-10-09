@@ -28,9 +28,9 @@ Note that the `:` at the end of each command is not part of the command, and is 
 
 `make cleanall`:		Clean all imported and generated files, including images.
 
-`make cleanebook`:	Clean just the non-image ebook files
-
 `make readme`:		Produce a PDF version of this file
+
+`make ecovers`:		Produces front and back covers, sized to amazon.  In our example, these are the same for the novel and collection (because I'm lazy). 
 
 ## Book production commands
 
@@ -46,13 +46,9 @@ Then you run one of the following:
 
 `make ebook`:	Produce `out/$type.epub`, the epub version (sans covers).
 
-`make justebook`:	Same as `make ebook` but doesn't rebuild any images.  Good for quick testing of ebook tweaks.
-
 `make draft`:	Produces `out/draft.pdf`, a draft version for editing.
 
 `make lookinside`:		Produces `out/$type_999-8-7777777-66-1.zip`, the bundle for upload to amazon for the print book's look-inside feature.
-
-`make ecovers`:	Produces front and back covers, sized to amazon
 
 `make all`:		Everything for that book
 
@@ -67,6 +63,8 @@ The output is print-ready, sized at 8.5 x 11.  The format can be modified as req
 In this sample setup, the status file is `stories_status.txt`, but in general it would be `status.txt` for a collection.  It must have the `Format` field discussed below for collections.
 
 An optional `ANON=1` can be used to produce output without the author name.  This is required by some contests. NOTE: this only affects the print output.  Indentifying info still may be included in the pdf metadata, though contests generally don't care about that.
+
+`[ANON=1] make allitems`:  Same as `make item` but performs for every item in the book.
 
 `make cleanitems`:	Remove all item-related output (for all items, not any specific one).
 
@@ -85,6 +83,8 @@ An optional `ANON=1` can be used to produce output without the author name.  Thi
 `ANON=1 ITEM=green make item`
 
 `ITEM=blue make item`
+
+`ANON=1 make allitems`
 
 # Directories and Files
 
@@ -166,9 +166,11 @@ The system relies on a number of external programs.  All are free, well-maintain
 
 `pdflatex`	(3.14159265-2.6-1.40.20)	[part of texlive]
 
+`memoir` 	[class for LaTeX]
+
 `pdfseparate`	(20.08.0)			[part of poppler utilities]
 
-`convert`		(6.9.12-17)			[part of ImageMagick]
+`convert`		(6.9.12-17)			[part of ImageMagick (may also require ghostscript)]
 
 `zip`		(3.0)
 
@@ -335,12 +337,27 @@ Figuring out what to adapt to your book may seem daunting.  If you're planning t
 	
 ## Individual item production
 
-* `GetItemInfo.py`:  Don't touch this.
+* `GetItemInfo.py`:  Don't touch this.  Not used in the current iteration.
 
-* `RunitemMake.py`:  Don't touch this. 
+* `RunItemMake.py`:  Don't touch this. 
 
 * `Makefile.indiv`:  Don't touch this.
 
 * `KenLatexTemplate.item.pandoc`:
 	- If you wish to customize the individual item format (for standalone pdfs of pieces), this is the place to do it.
 	
+# How things work
+
+Here's a quick (and somewhwat simplified) overview of what is happening with book production:
+
+* Novel print/draft:  `AssembleBooks.py` reads `novel_status.txt` and produces a big `.md` file, inserting chapter headers and other relevant section breaks according to the info in the status file.  The generated `.md` file is converted by `pandoc` into a standalone `.tex` file using a whole-book template (`KenLatexTemplate.book.pandoc` or `KenLatexTemplate.draft.pandoc`).  The resulting `.tex` file is then compiled with `pdflatex` into the output `.pdf` file.
+
+* Novel ebook:  We begin by creating a special print version of the book (identical to the version just mentioned, but with identical left-right margins and no odd/even pages.  We save certain frontmatter pages (half-title, title, and copyright pages) as single-page pdfs and then convert them to `.png` images. `EbookBuild.py` next reads `novel_status.txt` and produces a big `.md` file.  The result is very similar to that produced by `AssembleBooks.py` in the print case, but with some adjustments to the header lines to allow for CSS styles later in the conversion process.  The front-matter and back-matter formatting is different, with the copyright page the `.png` image we just produced from the print version.  A `.png` image of the title also is used, but this is inserted via a different route --- in the template file from which `pandoc` converts to `epub` format.  `pandoc` now is used to convert the generated `.md` file into an `.epub` document.
+
+* Collection print/draft:  `ConvertItemsToTex.py` reads `stories_status.txt` and converts each piece's `.md` source file to a non-standalone `.tex` file (no template is needed for this).  `GenInputs.py` reads `stories_status.txt` and produces an `inputlist.tex` file, which inputs the generated `.tex` version of each piece, wrapped in an appropriate latex script (poem, flash-fiction, or story), with appropriate accommodations for 2-piece-per-page cases and special formatting requests.  `pdflatex` then compiles `KenCollectionBook.tex` or `KenCollectionDraft.tex`, each of which inputs `inputlist.tex`.  The result is the output `.pdf`.
+
+* Collection ebook:  Same process as for the novel ebook, except that the header info (used for CSS) points to the style for each piece (poem, flash-fiction, or story) rather than a generic style as in the novel.
+
+* Individual item:  The machinery under-the-covers turns out to be a little roundabout, but it works.  `RunitemMake.py` extracts the info for the specified piece from `stories_status.txt`.  It then outsources the build to `Makefile.indiv`, passing the extracted info via environment variables. `Makefile.indiv` then does a series of steps. First, it converts the source file to a "core" `.tex` file via a no-frills `pandoc` conversion.  It then calls `GenInputs.py` in a special mode which produces a single-item entry as in the collection `inputlist.tex` file.  This calls a latex macro with all the relevant parameters from the status file.  The wrapper thus produced has as the input-file parameter, the core latex file.  We then run `pandoc` on the dummy markdown file using `KenLatexTemplate.item.pandoc` (and using `sed` to deal with some `pandoc` idiosyncrasies).  The resulting full `.tex` file inputs the wrapper `.tex` file which (via the relevant macro) then inputs the core `.tex` file.  The full `.tex` file then is compiled to a `.pdf` via `pdflatex` (run twice to get the page numbers right).
+
+

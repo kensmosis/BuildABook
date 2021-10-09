@@ -25,6 +25,8 @@ def ParseCommandLine():
 	p.add_argument('--status',help='Status file to use for story info. Mandatory.',type=str,required=True)
 	p.add_argument('--srcdir',help='Source directory for pieces (markdown files). Mandatory.',type=str,required=True)
 	p.add_argument('--book',help='Book name in status file to use. Mandatory.',type=str,required=True)
+	p.add_argument('--item',help='If specified, only outputs the specific entry. Optional',type=str,default="")
+	p.add_argument('--itemfile',help='If this and --item are specified, the input file in the relevant output is this rather than item.tex.  Optional.',type=str,default="")
 	c= p.parse_args()
 	return c
 
@@ -53,42 +55,57 @@ class FRec:
 			else: s.e+= "[Unknown format token %s]" % (j)
 		
 	def IsValid(s): return not (s.sd<0 or s.sd>2 or s.l<=0 or s.v<0 or s.t=="" or s.f=="" or s.e!="" or s.p not in ["poem", "flash", "story"])
-	def GetInputLine(s): return "{\\ken%s{%s}{%s}{%4.2f}{%dpt}}" % (s.p,s.t,s.f,s.l,s.v)
+	def GetInputLine(s,fl): return "{\\ken%s{%s}{%s}{%4.2f}{%dpt}}" % (s.p,s.t,(s.f if (fl=="") else fl),s.l,s.v)
+
+def processitemfull(r,ca,p):
+	f= re.split(':',r.ValF("Format"))
+	c= FRec(r,ca.srcdir)
+	if (c.e!=""): KErrDie(c.e)
+	elif (not c.IsValid()): KErrDie("Invalid status format record: "+c.fstr+" in record "+c.f)
+	pf= None if (not p) else FRec(p,ca.srcdir)
+	if (c.sd==0):
+		if (pf and pf.sd==1): KErrDie("S while previous D1 active")
+		print("\\renewcommand{\\kfootarrow}{}")
+		print("\\knewpage")
+		print("\\thispagestyle{plain}")
+		print(c.GetInputLine(""))
+	elif (c.sd==1):
+		if (pf and pf.sd==1): KErrDie("D1 while previous D1 active")
+	elif (c.sd==2):
+		if (not pf or pf.sd!=1): KErrDie("D2 while no previous D1 active")
+		print("\\renewcommand{\kfootarrow}{}")
+		print("\\knewpage")
+		print("\\thispagestyle{plain}")
+		print("\\begin{minipage}[c][.48\\textheight][t]{\\textwidth}")
+		print(pf.GetInputLine(""))
+		print("\\end{minipage}")
+		print("\\par\\nointerlineskip\\noindent")
+		print("\\begin{minipage}[c][.48\\textheight][t]{\\textwidth}")
+		print(c.GetInputLine(""))
+		print("\\end{minipage}")
+
+def processitemindiv(r,ca):
+	f= re.split(':',r.ValF("Format"))
+	c= FRec(r,ca.srcdir)
+	if (c.e!=""): KErrDie(c.e)
+	elif (not c.IsValid()): KErrDie("Invalid status format record: "+c.fstr+" in record "+c.f)
+	print(c.GetInputLine(ca.itemfile))
 
 def main():
 	ca= ParseCommandLine()
 	x= rs.Status(ca.status,True)		# Allow a blank last field value
 	if (ca.book not in x.books): KErrDie("Book %s not found in %s" % (ca.book,ca.status))
 	b= x.books[ca.book]
-
-	p= None
-	for i in b:
-		f= re.split(':',i.ValF("Format"))
-		c= FRec(i,ca.srcdir)
-		if (c.e!=""): KErrDie(c.e)
-		elif (not c.IsValid()): KErrDie("Invalid status format record: "+c.fstr+" in record "+c.f)
-		if (c.sd==0):
-			print("\\renewcommand{\\kfootarrow}{}")
-			print("\\knewpage")
-			print("\\thispagestyle{plain}")
-			print(c.GetInputLine())
-			p= None
-		elif (c.sd==1):
-			if (p and p.sd==1): KErrDie("D1 while previous D1 active")
-			p= c
-		elif (c.sd==2):
-			if (not p or p.sd!=1): KErrDie("D2 while no previous D1 active")
-			print("\\renewcommand{\kfootarrow}{}")
-			print("\\knewpage")
-			print("\\thispagestyle{plain}")
-			print("\\begin{minipage}[c][.48\\textheight][t]{\\textwidth}")
-			print(p.GetInputLine())
-			print("\\end{minipage}")
-			print("\\par\\nointerlineskip\\noindent")
-			print("\\begin{minipage}[c][.48\\textheight][t]{\\textwidth}")
-			print(c.GetInputLine())
-			print("\\end{minipage}")
-			p= None
-	if (p): KErrDie("Dangling D2 at end")
+	if (ca.item==""):
+		p= None
+		for i in b:
+			processitemfull(i,ca,p)
+			p= i
+		if (p and FRec(p,ca.srcdir).sd==1): KErrDie("Dangling D2 at end")
+	else:
+		l= x.RecLoc(ca.book,ca.item)
+		if (l<0): KErrDie("Item "+ca.item+" not found")
+		r= b[l]
+		processitemindiv(r,ca)
 
 main()

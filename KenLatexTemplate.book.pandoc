@@ -370,7 +370,7 @@ $body$
 
 %%% Advert page 1 (recto)
 \kadverttop{My First Book}{book1.bw.jpg}{book1_blurb.tex}
-\vskip 20pt
+\vskip 96pt
 \begin{center}\rule[0.5ex]{0.8\textwidth}{1pt}\end{center}
 \vskip 12pt
 \kadvertbot{My Second Book}{book2.bw.jpg}{book2_blurb.tex}{8pt}
