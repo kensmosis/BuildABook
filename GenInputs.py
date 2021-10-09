@@ -1,3 +1,10 @@
+### This is the counterpart of AssembleBook.py for collections.
+### Script to produce an .tex input file which consists of a list of wrappers, one per piece, which input
+### the corresponding piece's .tex file (converted from its source .md file elsewhere), wrapped in the appropriate
+### type of latex macro (\kenpoem, \kenflash, or \kenstory) with the relevant parameters from the Format 
+### field of the status.txt file.  There also is an option to output such a wrapper for just a single piece.
+### Note that the default linespread is 1.35, which is quite wide.  You may wish to reduce it for stories
+### via Ln.m flags in the Format field of the relevant entries in the collection's status file.
 import sys
 import re
 import os.path
@@ -6,11 +13,9 @@ import ReadStatus as rs
 
 deflinespread= 1.35
 
-# Necessary because python is an unholy pile of crap
 def KErr(*args, **kwargs):
 	print(*args, file=sys.stderr, **kwargs)
 
-# Necessary because python is an unholy pile of crap
 def KErrDie(*args, **kwargs):
 	print(*args, file=sys.stderr, **kwargs)
 	sys.exit()
@@ -21,7 +26,7 @@ def KReplaceExt(f,extold,extnew):
 	return root+extnew
 
 def ParseCommandLine():
-	p= argparse.ArgumentParser(description='Generate Book markdown file from chapters (novel) or pieces (collection)')
+	p= argparse.ArgumentParser(description='Generate a .tex input file for a collection, basically a manifest of all the pieces, properly wrapped.')
 	p.add_argument('--status',help='Status file to use for story info. Mandatory.',type=str,required=True)
 	p.add_argument('--srcdir',help='Source directory for pieces (markdown files). Mandatory.',type=str,required=True)
 	p.add_argument('--book',help='Book name in status file to use. Mandatory.',type=str,required=True)

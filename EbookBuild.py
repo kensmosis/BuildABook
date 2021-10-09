@@ -1,17 +1,14 @@
-# Prepare an .md file so pandoc can produce the ebook.
+# Prepare a whole-book .md file which pandoc can convert to an ebook.
+# This is highly specific to the book, and required adaptation.
+# Note that this file combines code to produce both the novel and compilation.  It should be pared down to one or the other when adapted for actual use.
 #
-# It is the ebook counterpart of KenLatexTemplate.book.pandoc.
-# NOT a generic script (like AssembleBook.py).  It is specific to the book, but quite adaptable.
-#
-# This should be run as part of a Makefile chain.
-#
-# NOTE:  Some of the oddities herein, the NeededDummyMetadata.md, and the KenEpubTemplate.pandoc are all becuase of 2 issues.  
+# NOTE:  The need (in Makefile) for NeededDummyMetadata.md and KenEpubTemplate.pandoc arises because of 2 issues.  
 #	(1) Pandoc autogen's a title page, which potentially can usurp epub title status even if left blank
 #	(2) Pandoc insists on generating a TOC element for every 1st level header.  
 #
-# The 1st problem means that I have to put the title page image in the template file (where the title page is gen'ed).  However, this means slurping in the relevant image.  Pandoc doesn't scan the template file for images (like it does for markdown), so an image reference there will end up broken.  Therefore, we must include a ref to the image in the YAML.  We then refer to this variable (which now points to the internal file000n.png image in the epub that has been slurped in).  However, due to order of processing issues we have to use <img> rather than ![]() format in the YAML file.
+# The 1st problem means that we have to put the title page image in the template file (where the title page is gen'ed).  However, this means slurping in the relevant image when we convert to epub.  Pandoc doesn't scan the template file for images (like it does for markdown), so an image reference there will end up broken.  Therefore, we must include a reference to the image in a dummy markdown file.  We then refer to this variable (which now points to the internal file000n.png image in the epub that has been slurped in).  However, due to order of processing issues we have to use <img> rather than ![]() format in the dummy file.
 #
-# The 2nd problem means that the frontmatter (and backmatter, but those are titled anyway in my case) pages appear in the TOC.  If use empty headers (# followed by space), the TOC entries are blank.  Although pandoc has an .unlisted tag, it has not been implemented for epub.  If I use a title (# foo), foo appears in the TOC but also as a header --- which is no good for pages which shouldn't have a header, like the Thank You page or the image frontmatter (copyright page, etc).  To get around this, I use a silly method where the header is disposed of using the
+# The 2nd problem means that the frontmatter (and backmatter, but those are titled anyway in my case) pages appear in the TOC.  If we use empty headers (# followed by space), the TOC entries will be blank.  Although pandoc has an .unlisted tag, it has not been implemented for epub.  If we use a title (# foo), foo appears in the TOC but also as a header --- which is no good for pages which shouldn't have a header, like the Thank You page or the image frontmatter (copyright page, etc).  To get around this, I use a silly method where the header is disposed of using css.  Basically, it is displayed but rendered invisible.  This works for the Amazon conversion processes, and is correctly rendered by Sigil.  However, some more primitive viewers (FBReader, ebook-view, etc) may show it.  
 #
 # NOTE:  It is necessary to have Sigil generate a toc of its own before uploading to amazon.  Otherwise amazon complains!  This requires no book-specific editing, just a quick, simple, and generic manual step in Sigil.
 #
@@ -119,8 +116,7 @@ def AccumImg(f,t,n,l):
 	l.append("::: {.hidetext}\n")
 	l.append("\n\n# "+n+" {epub:type="+t+" .unnumbered .unlisted}\n")
 	l.append("<center>\n")
-#	l.append("![]("+f+"){data-custom-style=\"imgFull\" style=\"width:100.0%;height:100.0%\"}\n\n")
-	l.append("<img data-custom-style=\"imgFull\" style=\"width:100.0%;height:100.0%\" alt=\""+t+"\" src=\""+f+"\"/>")
+	l.append("<img data-custom-style=\"imgSemiFull\" style=\"width:100.0%;height:100.0%\" alt=\""+t+"\" src=\""+f+"\"/>")
 	l.append("</center>\n")
 	l.append(":::\n")
 

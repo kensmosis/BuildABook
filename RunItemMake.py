@@ -1,4 +1,4 @@
-# Run's individual item makefile
+# Run's individual item makefile and produces pdf for a single piece poem, flash-fiction, or story.
 # Requires a Format field in status file
 
 import sys
@@ -7,11 +7,9 @@ import re
 import argparse
 import ReadStatus as rs
 
-# Necessary because python is an unholy pile of crap
 def KErr(*args, **kwargs):
 	print(*args, file=sys.stderr, **kwargs)
 
-# Necessary because python is an unholy pile of crap
 def KErrDie(*args, **kwargs):
 	print(*args, file=sys.stderr, **kwargs)
 	sys.exit()
@@ -24,7 +22,7 @@ def KReplaceExt(f,extold,extnew):
 	return root+extnew
 
 def ParseCommandLine():
-	p= argparse.ArgumentParser(description='Read a specific piece of info for a specific item in the status file.')
+	p= argparse.ArgumentParser(description='Produce a pdf for a single piece (for submission or editing).')
 	p.add_argument('--status',help='Status file to use for story info. Mandatory.',type=str,required=True)
 	p.add_argument('--author',help='Author. Mandatory.',type=str,required=True)
 	p.add_argument('--book',help='Book name in status file to use. Mandatory.',type=str,required=True)

@@ -1,5 +1,7 @@
-### Simple makefile used by script RunItemMake.py
-### It assumes the variables $(ITEMFILE)
+### Simple makefile used by script RunItemMake.py.
+### Note meant to be called by user directory.
+### It assumes the variables $(ITEMFILE) and (optionally) $(ANON)
+
 ifeq ($(ANON),1)
 ITEMPREFIX := anon_
 else
@@ -32,20 +34,20 @@ $(GENDIR)DummyMarkdownFileForConversion.md: | $(GENDIR)
 $(GENDIR)$(ITEMPREFIX)%_core.tex: $(SRCDIR)$(ITEMSRC) | $(GENDIR)
 	pandoc $(PANFLAGS) -o $@ $<
 
-### A one-line wrapper, which calls the right macro (kenpoem, kenflash, or kenstory), loading the %.tex file.  The echo wrappers are to protect the underscores from being escaped by pandoc!
+### A one-line wrapper, which calls the right macro (kenpoem, kenflash, or kenstory), loading the %.tex file.
 $(GENDIR)$(ITEMPREFIX)%_full_wrapper.tex: $(GENDIR)$(ITEMPREFIX)%_core.tex | $(GENDIR)
 	python3 $(BASEDIR)GenInputs.py --status $(BASEDIR)stories_status.txt --srcdir $(SRCDIR) --book $(BOOK) --item $(ITEM) --itemfile $< > $@
 
-### The actual latex file we will compile.  This is the one-line-wrapper, run through pandoc as if it was markdown, and injected into the item template.
+### The actual latex file we will compile.  This is the one-line-wrapper, run through pandoc as if it was markdown, and injected into the item template.  The sed command is to deal with a pandoc idiosyncracy (it escapes underscores rather than just passing them through).
 $(GENDIR)$(ITEMPREFIX)%_full.tex: $(GENDIR)DummyMarkdownFileForConversion.md
 	pandoc $(PANFLAGS) -M myfile="$(notdir $(basename $@))_wrapper.tex" -M title="$(TITLE)" -M author="$(AUTHOR)" -M itemtype="$(ITEMTYPE)" -M anonymous="$(ANON)" --template $(BASEDIR)KenLatexTemplate.item.pandoc -o $@ $<
 	sed -i -r 's/\\_/_/g' $@
 
-### Produce the pdf
+### Produce the pdf (we run pdflatex twice to get the page numbers right).
 $(GENDIR)$(ITEMPREFIX)%_full.pdf: $(GENDIR)$(ITEMPREFIX)%_full.tex $(GENDIR)$(ITEMPREFIX)%_core.tex $(GENDIR)$(ITEMPREFIX)%_full_wrapper.tex | $(OUTDIR)
-	echo $<
 	TEXINPUTS=$(TEXINPUTS):$(GENDIR) pdflatex --output-directory $(GENDIR) $<
 	TEXINPUTS=$(TEXINPUTS):$(GENDIR) pdflatex --output-directory $(GENDIR) $<
 
+### Copy to final output pdf
 $(OUTDIR)$(ITEMPREFIX)%.pdf: $(GENDIR)$(ITEMPREFIX)%_full.pdf | $(OUTDIR)
 	cp $< $@ 

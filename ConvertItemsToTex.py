@@ -1,4 +1,5 @@
-# Convert individual poem .md files to .tex
+# Convert individual piece .md files to .tex
+# This is done without a template, and just results in a no-frills non-standalone .tex file.
 # ./gen must already exist
 
 import sys
@@ -8,13 +9,9 @@ import os
 import argparse
 import ReadStatus as rs
 
-deflinespread= 1.35
-
-# Necessary because python is an unholy pile of crap
 def KErr(*args, **kwargs):
 	print(*args, file=sys.stderr, **kwargs)
 
-# Necessary because python is an unholy pile of crap
 def KErrDie(*args, **kwargs):
 	print(*args, file=sys.stderr, **kwargs)
 	sys.exit()
@@ -26,10 +23,10 @@ def KReplaceExt(f,extold,extnew):
 	if (ext!=extold): KErr("Error: extension for "+f+" is "+ext+" but expected "+extold)
 	return root+extnew
 
-def KExec(c): return os.popen(c).read().strip().split("\n")
+def KExec(c): print(os.popen(c).read())
 
 def ParseCommandLine():
-	p= argparse.ArgumentParser(description='Generate Book markdown file from chapters')
+	p= argparse.ArgumentParser(description='Convert individual piece markdown file to .tex prior to assembly into collection.')
 	p.add_argument('--status',help='Status file to use for story info. Mandatory.',type=str,required=True)
 	p.add_argument('--srcdir',help='Source directory for pieces (markdown files). Mandatory.',type=str,required=True)
 	p.add_argument('--tgtdir',help='Target directory for output latex files. Mandatory.',type=str,required=True)

@@ -1,7 +1,6 @@
-% *** TODO:  Remove xii from bottom of last page of TOC
-
 %%% Call as normal for book
 %%% Call with kebonly=true (or set to anything) for ebook header stuff only.
+%%% Must call with myfile= whatever the filename to input as the body is (i.e. the wrapper for the actual .tex file).
 
 %%% Define values we use throughout
 \def\ktitle{$title$}

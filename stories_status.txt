@@ -1,36 +1,5 @@
-### Status file for Collection of stories, poems, and flash fiction
-### Tab-delimited
-###
-# This is the file used for organizing the book.  It may have any set of fields, but Type, Title, and Status are reserved.  
-# We put the Title field last, so that we may allow blank values if the same as the name.  
-# 
-# If I wanted to key off a custom field like "Style" or "Day" for status reporting I would modify ReadStatus.py and Status.py. 
-# If I wanted to use a custom field like "Day" or "Style" in the book assembly (either for testing something or as part of a chapter subtitle), I would modify GenInputs.py or EbookBuild.py
-#
-# The status field is a list of chars representing progress.  This affects the reports by Status.py.  The codes have specific meanings.  See ReadStatus.py for details.
-# Status:  W= written, 1= round 1 edits, P= proofread, A= proofread edits applied
-# 
-# Title is the chapter title.  It may be used for internal purposes or as actual chapter titles.  In my book I ignored it.
-# @PRE is a file prefix for the source files (ex.  "mydir/mychapter" if the files are "mydir/mychapterCDel1.md", etc. 
-# @SUFF is the suffix for the files (.tex or .md, etc).
-# @HEAD lists the fields
-# @BOOK is the book name (I allow multiple books in a file, but don't recommend it!)
-# The book name in @BOOK is that referenced in the scripts which rely on status.txt!
-# The first field is the filename.  The actual filename is the @PRE$firstfield@SUFF
-#
-# Type:  
-#		C= New Chapter.
-#		S= New Section within existing chapter.  Depending on choices in AssembleBook and EbookBuild, may have a flourish separating it. 
-#		I= No separation.  Use this when you want to split a file for organizational purposes, but it should have no affect on the book.
-#
-# We also define a user field type "Format".  This is used by GenInputs.py and EbookBuild.py.  It is a : delimited list of flags
-#	D1, D2		Upper or lower half a page containing 2 pieces.  Must be consecutive.
-#	S		Single piece on 1+ pages.
-#	Ln.m		Set the linespread for the piece to n.m  (ex. L1.1). Default is 1.35.  Useful if need to fit on page.
-#	P		Poem format (no indents, linebreaks respected, blank line is new stanza (wth space)
-#	C		Story format (indents, linebreaks ignored, blank line is new par (no space)). 
-#	F		Flash fiction format (no indents, linebreaks ignored, blank line is new par (with space)).  Default if none specified.
-#
+### Status file for collection
+### This is the file used for organizing the book.  See README.md for details of its use.
 
 @SUFF	md
 @PRE	story_
@@ -53,5 +22,4 @@ yellow			C		W12PA		S:P:L1.1
 maybe			C		W12PA		S:F
 profoundthoughts	C		W12PA		D1:F		Profound Thoughts
 pretentious		C		W12PA		D2:P
-
 

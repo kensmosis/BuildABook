@@ -1,10 +1,7 @@
-### Assemble the chapter files into a single markdown file for print-related books
-### (i.e. everything except the ebook).   Warns of obvious problems
-###
-### It reads status.txt and generates a single unified .md file from all the individual section .md files in the source directory.
-#
-# Ex.  python3 ./AssembleBook.py --status ./status.txt --out ./gen/book.md --srcdir ./src --book MyNovel
-#
+### Assemble the chapter files into a single markdown file for print-related novel-style books
+### It reads the relevant status.txt file, and generates a single unified .md file from all the 
+### individual section .md files in the source directory.
+### Modify this if chapter subtitles are desired.  
 
 import argparse
 import re
@@ -20,7 +17,7 @@ def KErrDie(*args, **kwargs):
 	sys.exit()
 
 def ParseCommandLine():
-	p= argparse.ArgumentParser(description='Generate Book markdown file from chapters')
+	p= argparse.ArgumentParser(description='Assemble whole-book markdown file from chapters')
 	p.add_argument('--status',help='Status file to use for story info. Mandatory.',type=str,required=True)
 	p.add_argument('--out',help='Output markdown file. Mandatory.',type=str,required=True)
 	p.add_argument('--srcdir',help='Source directory for chapter files. Mandatory.',type=str,required=True)
@@ -40,14 +37,14 @@ def AccumSrcFile(cnum,sdir,r,l):
 		cnum= cnum+1
 		l.append("\n\n# Chapter %d\n\n" % (cnum))	# Display "Chapter 4" type headers.
 #		l.append("# %d. %s\n\n" % (cnum,tit))		# Use this instead if want "4. mychaptertitle" style headers (with mychaptertitle from the status.txt file).
-		# Add a line with #### if desire subtitles of chapters (ex. day and location, or character, etc. 
+		# Add a line with #### if you desire subtitles of chapters (ex. day and location, or character, etc) using custom fields.  They can be accessed via r.ValF("myfield"). 
 	elif (r.IsSection()): l.append("\n##\n\n\n")
 	elif (r.IsSilentSection()):  l.append("\n\n")	# No subsection/etc.  
 	else: KErrDie("Src File %s has unknown type (not C or S) in status file" % (r.Filename()))
-	l.append("\n### --------[%s]----------\n\n" % (r.Filename()))	# Display the file name.  In the relevant pandoc templates, we disable display of level-3 sections in all but draft-output modes --- so this doesn't affect non-draft output.
+	l.append("\n### --------[%s]----------\n\n" % (r.Filename()))	# Display the file name.  We ignore this in all but the draft output. 
 	with open(ifil,'r') as f:
 		for i in f:
-			if (re.match("[#\*]+\.?\ ",i)): KErr("Warning: File %s has md-like start to line %d" % (r.Filename(),n+1))
+			if (re.match("[#\*]+\.?\ ",i)): KErr("Warning: File %s has md-like start to line %d" % (r.Filename(),n+1))	# Unlike in a collection, we do not allow header codes in the source markdown!
 			l.append(i)
 			n= n+1
 	return (ctype,n)

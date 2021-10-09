@@ -7,7 +7,7 @@ sys.path.append(".")
 import ReadStatus as rs
 
 sdir= "./src"			# Where the source .md files reside
-sfil= "./status.txt"		# The status.txt file to use
+sfil= "./novel_status.txt"		# The status.txt file to use
 book= "MyNovel"			# This is the name of the book in the status.txt file
 x= rs.Status(sfil)
 w= x.TotalWords(book,'',sdir)

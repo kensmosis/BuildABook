@@ -361,3 +361,36 @@ Here's a quick (and somewhwat simplified) overview of what is happening with boo
 * Individual item:  The machinery under-the-covers turns out to be a little roundabout, but it works.  `RunitemMake.py` extracts the info for the specified piece from `stories_status.txt`.  It then outsources the build to `Makefile.indiv`, passing the extracted info via environment variables. `Makefile.indiv` then does a series of steps. First, it converts the source file to a "core" `.tex` file via a no-frills `pandoc` conversion.  It then calls `GenInputs.py` in a special mode which produces a single-item entry as in the collection `inputlist.tex` file.  This calls a latex macro with all the relevant parameters from the status file.  The wrapper thus produced has as the input-file parameter, the core latex file.  We then run `pandoc` on the dummy markdown file using `KenLatexTemplate.item.pandoc` (and using `sed` to deal with some `pandoc` idiosyncrasies).  The resulting full `.tex` file inputs the wrapper `.tex` file which (via the relevant macro) then inputs the core `.tex` file.  The full `.tex` file then is compiled to a `.pdf` via `pdflatex` (run twice to get the page numbers right).
 
 
+## Details of status.txt file format
+
+The "status" file (`stories_status.txt` and `novel_status.txt` in our examples) is the control file for a book.  It can contain custom fields for the purposes of organization or to produce subtitles or other elements of the output.  The following describes the `status.txt` format and constraints.  "Unit" refers to an individual source file (a chapter or poem, etc).
+
+* The file is tab-delimited.
+* Anything after a `#` is ignored.
+* Blank lines are ignored.
+* Special lines begin with `@`  (which means entry names should not)
+* `@PRE` is a file prefix for the source files (ex.  "story_" if the files are "story_blue.md", etc).  If used multiple times, a given prefix carries forward until the next one is declared. 
+* `@SUFF` is a file suffix for the source files (ex. "tex" or "md"). A dot automatically inserted (for nonblank suffixes only). If used multiple times, a given suffix carries forward until the next one is declared. 
+* `@HEAD` lists the field names (other than the 1st, which is the reference name). Mandatory and once per file.  Must precede the `@BOOK` line.
+* `@BOOK` is the book name, the one referenced in various scripts.  A given file can contain multiple books (though this generally is discouraged).  All books must have the same `@HEAD` line, so this won't work with books which require different sets of fields.  Basically, it is useful for books of the same type, subdividing an existing book, or keeping a bunch of units in reserve (ex in a dummy book).
+* Each `@BOOK` entry starts a new book with the referenced name.  It is followed by unit entries until the next book (or the end of the file).
+* Each entry is tab-delimited.  The first field is a name.  It is used for reference, so it is highly advisable not to have spaces or special characters in the source file names.  The source file is `$PRE$NAME[.$SUFF]` where `$PRE` and `$SUFF` are the prefix and suffix (if any) in place when the entry is reached.
+* Entries in different books can have the same name (though obviously only if the actual files differ due to differing suffixes or prefixes).  However, it is advisable to keep things unambiguous by avoiding this.
+* There are a few mandatory reserved fieldnames:  `Type`, `Status`, and `Title` in general and, for collections only, `Format`.
+* `Status` is a list of chars representing progress.  This is used in `Status.py`.  The codes have specific meanings (see `ReadStatus.py` for details): `W`= written, `1`= round-one edits, `P`= proofread, `A`= proofread edits applied.
+* `Title` is the chapter title as rendered in the text.  It may have spaces, and capitalization matters.
+* `Type` is used only for novels.  For collections just set it to `C` for every entry. For novels it means the following (note: the `=` is not part of the code):
+  	- `C`= New Chapter.  The first unit of a novel-style book must be of type `C`.
+	- `S`= New Section within existing chapter.  Depending on choices in `AssembleBook.py` and `EbookBuild.py`, this may involve a separaing flourish.
+	- `I`= No separation.  Use this when you want to split a file for organizational purposes but with no visible effect on the book.
+* `Format` is a field specific to collections.  It is managed primarily in `GenInputs.py`, but referenced in `EbookBuild.py` and several collection-related scripts.   The value is a :-delimited list of flags as follows (note: the `=` is not part of the code). Every entry must have one of `D1`, `D2`, or `S`.  The rest are optional (though it is advisable to explicitly include one of `P`, `F`, `C`, rather than rely on the default `F`).
+	- `D1`=    Upper half of two-piece page.  Must be followed by a D2 entry.
+	- `D2`=    Lower half of two-piece page.  Must be preceded by a D1 entry.
+	- `S`=		Single piece on 1+ pages.  This is the most common case.
+	- `Ln.m`=	Set the linespread for the piece to n.m  (ex. `L1.1`). Default is `1.35`.  You may want to use `1.15` for stories if you find this a bit wide.  Useful if you need to fit an extra line or two on a page, since small changes are not visually obvious.  Ignored in drafts and ebooks.
+	- `P`=		Poem format (no indents, no space between pars, stanzas are explicitly marked by user and result in a blank line).
+	- `C`=		Story format (indents, no space between pars).
+	- `F`=		Flash fiction format (no indents, blank line between pars).  This is the default.
+* No value in any field of any entry may be left blank.  I.e., use some code like `---` to denote "not set".  There is *one* exception, however.  For collections only, if `Title` is the last field, it may be left blank.  In that case, the title is inferred from the name (the 1st field) by capitalizing its 1st letter.  Note that the prefix and suffix are not included here.  If the first field is "foo", the inferred title will be "Foo".  This can be handy if most of the titles are the same as the names. 
+* The item names referenced in `make item` are in the first field.
+* Note: there is no reason a novel and collection can't coexist in the same status file.  However, the `Format` field would have to be populated for all entries.  Since the novel doesn't care about it, 'S' for its entries would work.

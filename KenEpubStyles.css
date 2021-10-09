@@ -116,9 +116,16 @@ p {
 	margin-left: auto;
 	margin-right: auto;
 	padding: 0px;
-	max-width 1200px;
-	max-height 1920px;
 	width: auto;
 	height: auto;
+	display: block;
+}
+
+.imgSemiFull {
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0px;
+	width: auto;
+	height: 70%;
 	display: block;
 }

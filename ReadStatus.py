@@ -1,31 +1,11 @@
 import os.path
 import re
 
-### This is the Python3 counterpart to ReadStatus.pm, except it doesn't do lots of the estimation functions.  
+## Classes for generic reading of status.txt files for novels or collections.
+## Status:  Class containing all info parsed from status.txt file.
+## SRec:   Entry for individual unit of a particular book (ex. poem or chapter).
 ##
-## The status.txt file is the control file for a book (or several books).
-##	The file is tab-delimited.
-##	Anything following # is ignored, as are blank lines.
-##	Special lines begin with @:
-##		@PRE	set the prefix going forward.  Ex. if all chapter files start with chap, we could use "@PRE chap" and then chapter names foo and bar would be converted to chapfoo and chapbar.  @PRE can be specified multiple times and only affects the rows following it.
-##		@SUFF	same as @PRE but a suffix.  For backward compatibility, we insert a period.  I.e., @SUFF is an extension.  Ex.  "@SUFF md" means that we would end up with chapfoo.md and chapbar.md
-##		@BOOK	we are beginning a new book.  All chapters which follow are in the new book.  The 1st must be of type "C".  The name of the book is provided (case sensitive).  This is the book name used for reference in most scripts.
-##		@HEAD	list the fields.  Two  of these must be "Type" and "Status".  Note that the 1st entry in each chapter-line is the name (for filename purposes).  If present, a "Title" field can be specified as well.  If the last field, we can (with certain options specified) use the filename (sans suffix and prefix) from the 1st column unless the title (last column) is non-blank.  Blanks are not allowed in any other columns.  @HEAD only may occur once and must occur before any chapter lines or any @BOOK lines.
-##
-## 	Chapter lines begin with the name (pre+name+suff is the filename) followed by the fields specified in @HEAD.  There are two special fields:  Title and Status.  Other fields can be used to provide info for generation of the book (ex. chapter subtitles such as a date and place, etc.  They also can be used for internal organizational purposes.
-##		Type:	C, S, I
-##			C= Chapter and means to start a chapter.  The 1st line in a book must be of this type.
-##			S= Section within a chapter.  It may have its own title or simply be an ornamental. 
-##			I= Internal division.  Use this if no visible break should occur, but the chapter/section was broken into multiple files for convenience.
-##		Status:  This is used to tally progress and estimate remaining work.  It is a series of chars (order is irrelevant).		
-##			W= Written
-##			1= 1st round edits
-##			P= proofread
-##			A= application of proofread edits
-##			other chars (ex. 2) can be used as the user wishes.
-##
-##	The chapter lines are read until the status file ends or an @BOOK is encountered.
-
+## See README.md for details of the status.txt file format and constraints.
 
 # A chapter/story record.  f is a list of headers for fields.
 class SRec:
@@ -65,16 +45,16 @@ def fileerr(err,n,fname): print("ERROR: %s.  Line %d in file %s" % (err,n,fname)
 # The full table of chapters
 class Status:
 	def __init__(s,fname,allowblanklastfield=False):
-		pre= ""
-		suff= "txt"
-		book= ""
-		s.fname= fname
-		s.recs= set()
-		s.head= list()
-		s.rhead= dict()
-		s.books= dict()			# Map from books to list of records in order
-		s.booklist= list()
-		s.allrec= list()
+		pre= ""				# Transient
+		suff= "txt"			# Transient
+		book= ""			# Transient
+		s.fname= fname			# Status file it is read from
+		s.recs= set()			# Set of all record
+		s.head= list()			# List of header fields (must be common to all books)
+		s.rhead= dict()			# Header field -> field number
+		s.books= dict()			# Map from book to ordered list of records in the book
+		s.booklist= list()		# Ordered list of books
+		s.allrec= list()		# Ordered list of all entries (from all book)
 		with open(fname,'r') as f:
 			for s.n, l in enumerate(f):
 				l= re.sub("#.*","",l)
@@ -101,8 +81,7 @@ class Status:
 					if (len(s.recs)==0 and not r.IsChapter()): fileerr("First entry in book is not a chapter (i.e. Type C).  Are you sure this is what you want?",n,fname) 
 					s.recs.add(r)
 					s.books[book].append(r)
-					s.allrec.append(r)					
-#		print("Read %d books, %d records and %d lines from %s" % (len(s.books), len(s.allrec), s.n, fname))
+					s.allrec.append(r)
 
 	def NumBooks(s): return len(s.books)
 	def NumRecs(s): return len(s.allrec)
